@@ -32,7 +32,7 @@ class Request:
     def to_set_dashboard_angle(cls, angle):
         if angle < 0 or angle > 31:
             raise ValueError("wrong angle (0-31)")
-        return Request(chr(128 + angle))
+        return Request(chr(0 + angle))
 
     @classmethod
     def to_set_led1(cls, value):
