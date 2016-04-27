@@ -20,7 +20,7 @@ public class Patient {
     private String alert;
 
     public Patient(String baseForUri) throws URISyntaxException {
-        this.baseForUri = baseForUri;
+        this.baseForUri = baseForUri + ":";
         refresh();
     }
 
@@ -78,15 +78,15 @@ public class Patient {
         return (response.getResponseText().equals("Program registered and started successfully"));
     }
 
-    public List<TempMeasurement> getTemperatureProgram() throws URISyntaxException, IOException {
+    public List<TempProgramMeasurement> getTemperatureProgram() throws URISyntaxException, IOException {
         URI uri = new URI(baseForUri + "/TemperatureProgram");
         CoapResponse response = new CoapClient(uri).get();
 
-        List<TempMeasurement> result = new ArrayList<>();
+        List<TempProgramMeasurement> result = new ArrayList<>();
 
         String[] splitted = response.getResponseText().split("\\n");
         for(String s: splitted){
-            result.add(new TempMeasurement(s));
+            result.add(new TempProgramMeasurement(s));
         }
 
         return result;

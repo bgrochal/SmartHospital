@@ -5,9 +5,10 @@ import java.io.IOException;
 /**
  * Created by wgrabis on 27.04.2016.
  */
-public class TempMeasurement {
+public class TempProgramMeasurement {
     private String date;
     private String hour;
+    private String expected;
     private String temp;
 
     public String getDate() {
@@ -18,16 +19,24 @@ public class TempMeasurement {
         return hour;
     }
 
+    public String getExpected() {
+        return expected;
+    }
+
     public String getTemp() {
         return temp;
     }
 
-    public TempMeasurement(String data) throws IOException {
+    public TempProgramMeasurement(String data) throws IOException {
         String[] splitted = data.split(",?\\s+");
-        if(splitted.length != 3)throw new IOException();
+        if(splitted.length != 6)throw new IOException();
 
         date = splitted[0];
         hour = splitted[1];
-        temp = splitted[2];
+        temp = splitted[4];
+        expected = splitted[5];
+
     }
+
+
 }
