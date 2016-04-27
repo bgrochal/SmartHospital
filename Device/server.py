@@ -179,7 +179,25 @@ class AlertResource(resource.CoAPResource):
 		reactor.callLater(5, self.notify)
 
 
+class PatientResource(resource.CoAPResource):
+	def __init__(self):
+		resource.CoAPResource.__init__(self)
+		self.visible = True
+	
+	def render_GET(self, request):
+		global patient_name
+		response_message = coap.Message(code=coap.CONTENT, payload=patient_name)
+		return defer.succeed(response_message)
+	
+	def render_PUT(self, request):
+		global patient_name
+		patient_name = request.payload
+		response_message = coap.Message(code=coap.CONTENT, payload="Patient name set to: " + patient_name + ".")
+		return defer.succeed(response_message)
+
+
 # Global logic
+patient_name = "NONAME"
 bed_position = 0
 alert = 0
 
@@ -200,6 +218,9 @@ hospital.putChild('Alert', alert)
 
 bed = BedResource()
 hospital.putChild('Bed', bed)
+
+patient = PatientResource()
+hospital.putChild('Patient', patient)
 
 temperature = TemperatureResource()
 hospital.putChild('Temperature', temperature)
