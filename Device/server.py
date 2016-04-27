@@ -16,30 +16,30 @@ import ca_short as ca
 
 
 class CoreResource(resource.CoAPResource):
-    """
-    Example Resource that provides list of links hosted by a server.
-    Normally it should be hosted at /.well-known/core
-    Resource should be initialized with "root" resource, which can be used
-    to generate the list of links.
-    For the response, an option "Content-Format" is set to value 40,
-    meaning "application/link-format". Without it most clients won't
-    be able to automatically interpret the link format.
-    Notice that self.visible is not set - that means that resource won't
-    be listed in the link format it hosts.
-    """
-
-    def __init__(self, root):
-        resource.CoAPResource.__init__(self)
-        self.root = root
-
-    def render_GET(self, request):
-        data = []
-        self.root.generateResourceList(data, "")
-        payload = ",".join(data)
-        print payload
-        response = coap.Message(code=coap.CONTENT, payload=payload)
-        response.opt.content_format = coap.media_types_rev['application/link-format']
-        return defer.succeed(response)
+	"""
+	Example Resource that provides list of links hosted by a server.
+	Normally it should be hosted at /.well-known/core
+	Resource should be initialized with "root" resource, which can be used
+	to generate the list of links.
+	For the response, an option "Content-Format" is set to value 40,
+	meaning "application/link-format". Without it most clients won't
+	be able to automatically interpret the link format.
+	Notice that self.visible is not set - that means that resource won't
+	be listed in the link format it hosts.
+	"""
+	
+	def __init__(self, root):
+		resource.CoAPResource.__init__(self)
+		self.root = root
+	
+	def render_GET(self, request):
+		data = []
+		self.root.generateResourceList(data, "")
+		payload = ",".join(data)
+		print payload
+		response = coap.Message(code=coap.CONTENT, payload=payload)
+		response.opt.content_format = coap.media_types_rev['application/link-format']
+		return defer.succeed(response)
 
 
 class BedResource(resource.CoAPResource):
@@ -106,7 +106,6 @@ class TemperatureProgramResource(resource.CoAPResource):
 	def __init__(self):
 		resource.CoAPResource.__init__(self)
 		self.visible = True
-		self.observable = True
 	
 	def render_GET(self, request):
 		program_file = open("program_output.txt", "r")
@@ -116,11 +115,15 @@ class TemperatureProgramResource(resource.CoAPResource):
 		return defer.succeed(response_message)
 	
 	def thread_function(self, duration, arguments):
+		global alert
 		program_file = open("program_output.txt", "w")
 		for argument in arguments:
 			ca.query(ca.TEMP)
 			response_value = ca.get_res().value_of(ca.TEMP)
 			response_value = (response_value - 10) * 2
+			if (int)(argument) < response_value:
+				ca.set_led1(1)
+				alert = 1
 			program_file.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " Expected: " + argument + "; is: " + (str)(response_value) + ".\n")
 			time.sleep(duration)
 		program_file.close()
@@ -132,6 +135,11 @@ class TemperatureProgramResource(resource.CoAPResource):
 		response_message = coap.Message(code=coap.CONTENT, payload="Program registered and started successfully.")
 		thread.start_new_thread(self.thread_function, (duration, arguments))
 		return defer.succeed(response_message)
+	
+	def render_DELETE(self, request):
+		os.remove("program_output.txt")
+		response_message = coap.Message(code=coap.CONTENT, payload="Program's output file deleted successfully.")
+		return defer.succeed(response_message)
 
 
 class AlertResource(resource.CoAPResource):
@@ -139,10 +147,32 @@ class AlertResource(resource.CoAPResource):
 		resource.CoAPResource.__init__(self)
 		self.visible = True
 		self.observable = True
+		thread.start_new_thread(self.thread_function, ())
 		self.notify()
 	
+	def thread_function():
+		global alert
+		previous_state = 0
+		
+		ca.subscribe(ca.BUTTON1)
+		while True:
+			response_value = ca.get_res().value_of(ca.BUTTON1)
+			if response_value == 1:
+				if alert == 0:
+					alert = 1
+					ca.set_led1(1)
+				else:
+					alert = 0
+					ca.set_led1(0)
+
+
 	def render_GET(self, request):
-		pass
+		global alert
+		message_payload = "Everything is OK."
+		if alert == 1:
+			message_payload = "ALERT!"
+		response_message = coap.Message(code=coap.CONTENT, payload=message_payload)
+		return defer.succeed(response_message)
 	
 	def notify(self):
 		self.updatedState()
@@ -151,6 +181,7 @@ class AlertResource(resource.CoAPResource):
 
 # Global logic
 bed_position = 0
+alert = 0
 
 # Resource tree creation
 log.startLogging(sys.stdout)
