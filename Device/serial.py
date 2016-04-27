@@ -4,7 +4,7 @@ class Serial:
 		self.port = port
 		self.timeout = timeout
 		
-		self.set_value('knob', 15)
+		self.set_value('temp', 22)
 	
 	
 	requests = {'light' : 0, 'button1' : 0, 'button2' : 0, 'knob' : 0, 'temp' : 0, 'motion' : 0}

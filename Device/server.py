@@ -1,10 +1,7 @@
-'''
-Created on 08-09-2012
-
-@author: Maciej Wasilak
-'''
-
+import os
 import sys
+import time
+import thread
 import datetime
 
 from twisted.internet import defer
@@ -18,117 +15,15 @@ import txthings.coap as coap
 import ca_short as ca
 
 
-class CounterResource (resource.CoAPResource):
-    """
-    Example Resource which supports only GET method. Response is a
-    simple counter value.
-
-    Name render_<METHOD> is required by convention. Such method should
-    return a Deferred. If the result is available immediately it's best
-    to use Twisted method defer.succeed(msg).
-    """
-   #isLeaf = True
-
-    def __init__(self, start=0):
-        resource.CoAPResource.__init__(self)
-        self.counter = start
-        self.visible = True
-        self.addParam(resource.LinkParam("title", "Counter resource"))
-
-    def render_GET(self, request):
-        response = coap.Message(code=coap.CONTENT, payload='%d' % (self.counter,))
-        self.counter += 1
-        return defer.succeed(response)
-
-
-class BlockResource (resource.CoAPResource):
-    """
-    Example Resource which supports GET, and PUT methods. It sends large
-    responses, which trigger blockwise transfer (>64 bytes for normal
-    settings).
-
-    As before name render_<METHOD> is required by convention.
-    """
-    #isLeaf = True
-
-    def __init__(self):
-        resource.CoAPResource.__init__(self)
-        self.visible = True
-
-    def render_GET(self, request):
-        payload=" Now I lay me down to sleep, I pray the Lord my soul to keep, If I shall die before I wake, I pray the Lord my soul to take."
-        response = coap.Message(code=coap.CONTENT, payload=payload)
-        return defer.succeed(response)
-
-    def render_PUT(self, request):
-        print 'PUT payload: ' + request.payload
-        payload = "Mr. and Mrs. Dursley of number four, Privet Drive, were proud to say that they were perfectly normal, thank you very much."
-        response = coap.Message(code=coap.CHANGED, payload=payload)
-        return defer.succeed(response)
-
-
-class SeparateLargeResource(resource.CoAPResource):
-    """
-    Example Resource which supports GET method. It uses callLater
-    to force the protocol to send empty ACK first and separate response
-    later. Sending empty ACK happens automatically after coap.EMPTY_ACK_DELAY.
-    No special instructions are necessary.
-
-    Notice: txThings sends empty ACK automatically if response takes too long.
-
-    Method render_GET returns a deferred. This allows the protocol to
-    do other things, while the answer is prepared.
-
-    Method responseReady uses d.callback(response) to "fire" the deferred,
-    and send the response.
-    """
-    #isLeaf = wTrue
-
-    def __init__(self):
-        resource.CoAPResource.__init__(self)
-        self.visible = True
-        self.addParam(resource.LinkParam("title", "Large resource."))
-
-    def render_GET(self, request):
-        d = defer.Deferred()
-        reactor.callLater(3, self.responseReady, d, request)
-        return d
-
-    def responseReady(self, d, request):
-        log.msg('response ready. sending...')
-        payload = "Three rings for the elven kings under the sky, seven rings for dwarven lords in their halls of stone, nine rings for mortal men doomed to die, one ring for the dark lord on his dark throne."
-        response = coap.Message(code=coap.CONTENT, payload=payload)
-        d.callback(response)
-
-class TimeResource(resource.CoAPResource):
-    def __init__(self):
-        resource.CoAPResource.__init__(self)
-        self.visible = True
-        self.observable = True
-
-        self.notify()
-
-    def notify(self):
-        log.msg('TimeResource: trying to send notifications')
-        self.updatedState()
-        reactor.callLater(60, self.notify)
-
-    def render_GET(self, request):
-        response = coap.Message(code=coap.CONTENT, payload=datetime.datetime.now().strftime("%Y-%m-%d %H:%M"))
-        return defer.succeed(response)
-
 class CoreResource(resource.CoAPResource):
     """
     Example Resource that provides list of links hosted by a server.
     Normally it should be hosted at /.well-known/core
-
     Resource should be initialized with "root" resource, which can be used
     to generate the list of links.
-
     For the response, an option "Content-Format" is set to value 40,
     meaning "application/link-format". Without it most clients won't
     be able to automatically interpret the link format.
-
     Notice that self.visible is not set - that means that resource won't
     be listed in the link format it hosts.
     """
@@ -146,22 +41,116 @@ class CoreResource(resource.CoAPResource):
         response.opt.content_format = coap.media_types_rev['application/link-format']
         return defer.succeed(response)
 
+
 class BedResource(resource.CoAPResource):
+	def __init__(self):
+		resource.CoAPResource.__init__(self)
+		self.visible = True
+		
+	def render_GET(self, request):
+		global bed_position
+		response_message = coap.Message(code=coap.CONTENT, payload='Bed position is: %d.' % bed_position)
+		return defer.succeed(response_message)
+	
+	def render_PUT(self, request):
+		global bed_position
+		bed_position = (int)(request.payload)
+		ca.set_dash(bed_position)
+		response_message = coap.Message(code=coap.CONTENT, payload="Bed position set to: %d." % bed_position)
+		return defer.succeed(response_message)
 
-    def __init__(self):
-        resource.CoAPResource.__init__(self)
-        self.visible = True
 
-    def render_GET(self, request):
-        ca.query(ca.KNOB)
-        response = ca.get_res()
-        res = response.value_of(ca.KNOB)
-	print "======================="
-	print res
-	print "======================="
-	resp = coap.Message(code=coap.CONTENT, payload='%d' % res)
-        return defer.succeed(resp)
+class TemperatureResource(resource.CoAPResource):
+	def __init__(self):
+		resource.CoAPResource.__init__(self)
+		self.visible = True
+		self.observable = True
+		self.notify()
+		
+	def render_GET(self, request):
+		ca.query(ca.TEMP)
+		response_value = ca.get_res().value_of(ca.TEMP)
+		response_value = (response_value - 10) * 2
+		response_message = coap.Message(code=coap.CONTENT, payload="Temperature of patient is: %d." % response_value)
+		
+		temperature_file = open("temperatures.txt", "a")
+		temperature_file.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " " + (str)(response_value) + "\n")
+		temperature_file.close()
+		
+		return defer.succeed(response_message)
 
+	def notify(self):
+		self.updatedState()
+		reactor.callLater(5, self.notify)
+
+
+class TemperatureFileResource(resource.CoAPResource):
+	def __init__(self):
+		resource.CoAPResource.__init__(self)
+		self.visible = True
+	
+	def render_GET(self, request):
+		temperature_file = open("temperatures.txt", "r")
+		lines_content = temperature_file.readlines()
+		string_content = "".join(lines_content)
+		response_message = coap.Message(code=coap.CONTENT, payload=string_content)
+		return defer.succeed(response_message)
+	
+	def render_DELETE(self, request):
+		os.remove("temperatures.txt")
+		response_message = coap.Message(code=coap.CONTENT, payload="History of temperatures deleted successfully.")
+		return defer.succeed(response_message)
+
+
+class TemperatureProgramResource(resource.CoAPResource):
+	def __init__(self):
+		resource.CoAPResource.__init__(self)
+		self.visible = True
+		self.observable = True
+	
+	def render_GET(self, request):
+		program_file = open("program_output.txt", "r")
+		lines_content = program_file.readlines()
+		string_content = "".join(lines_content)
+		response_message = coap.Message(code=coap.CONTENT, payload=string_content)
+		return defer.succeed(response_message)
+	
+	def thread_function(self, duration, arguments):
+		program_file = open("program_output.txt", "w")
+		for argument in arguments:
+			ca.query(ca.TEMP)
+			response_value = ca.get_res().value_of(ca.TEMP)
+			response_value = (response_value - 10) * 2
+			program_file.write(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") + " Expected: " + argument + "; is: " + (str)(response_value) + ".\n")
+			time.sleep(duration)
+		program_file.close()
+	
+	def render_PUT(self, request):
+		arguments = (request.payload).split(" ")
+		duration = (int)(arguments[0])
+		arguments.pop(0)
+		response_message = coap.Message(code=coap.CONTENT, payload="Program registered and started successfully.")
+		thread.start_new_thread(self.thread_function, (duration, arguments))
+		return defer.succeed(response_message)
+
+
+class AlertResource(resource.CoAPResource):
+	def __init__(self):
+		resource.CoAPResource.__init__(self)
+		self.visible = True
+		self.observable = True
+		self.notify()
+	
+	def render_GET(self, request):
+		pass
+	
+	def notify(self):
+		self.updatedState()
+		reactor.callLater(5, self.notify)
+
+
+# Global logic
+bed_position = 0
 
 # Resource tree creation
 log.startLogging(sys.stdout)
@@ -172,24 +161,25 @@ root.putChild('.well-known', well_known)
 core = CoreResource(root)
 well_known.putChild('core', core)
 
-counter = CounterResource(5000)
-root.putChild('counter', counter)
+hospital = resource.CoAPResource()
+root.putChild('Hospital', hospital)
 
-time = TimeResource()
-root.putChild('time', time)
-
-other = resource.CoAPResource()
-root.putChild('other', other)
-
-block = BlockResource()
-other.putChild('block', block)
-
-separate = SeparateLargeResource()
-other.putChild('separate', separate)
+alert = AlertResource()
+hospital.putChild('Alert', alert)
 
 bed = BedResource()
-other.putChild('bed', bed)
+hospital.putChild('Bed', bed)
 
+temperature = TemperatureResource()
+hospital.putChild('Temperature', temperature)
+
+temperature_file = TemperatureFileResource()
+hospital.putChild('TemperaturesHistory', temperature_file)
+
+temperature_program = TemperatureProgramResource()
+hospital.putChild('TemperatureProgram', temperature_program)
+
+# Run server.
 endpoint = resource.Endpoint(root)
 reactor.listenUDP(coap.COAP_PORT, coap.Coap(endpoint)) #, interface="::")
 reactor.run()

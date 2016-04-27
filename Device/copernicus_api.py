@@ -1,6 +1,5 @@
 import serial
 
-
 class Rgb3:
     def __init__(self, r, g, b):
         if not (r in range(0, 4) and g in range(0, 4) and b in range(0, 4)):
