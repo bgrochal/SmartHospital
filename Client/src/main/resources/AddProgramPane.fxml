@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>\
+
+<BorderPane prefHeight="400.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="pl.edu.agh.iot.hospital.client.view.AddProgramController">
+    <center>
+        <TableView fx:id="table" prefHeight="400.0" prefWidth="400.0" BorderPane.alignment="CENTER">
+            <columns>
+                <TableColumn fx:id="temp" prefWidth="75.0" text="Temp" editable="true"/>
+            </columns>
+        </TableView>
+    </center>
+    <right>
+        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="150.0" BorderPane.alignment="CENTER">
+            <opaqueInsets>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </opaqueInsets>
+            <children>
+                <Button fx:id="acceptButton" alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAcceptAction" text="Accept">
+
+                    <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </VBox.margin></Button>
+
+                <Button fx:id="addButton" alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" mnemonicParsing="false" onAction="#handleAddAction" text="Add">
+
+                    <VBox.margin>
+                        <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+                    </VBox.margin></Button>
+
+                <HBox alignment="TOP_LEFT" prefWidth="200.0" BorderPane.alignment="TOP_LEFT">
+                    <TextField fx:id="addField" prefWidth="100.0" promptText="time frame" />
+                    <Button fx:id="setButton" text="Set time" onAction="#handleSetTime" maxWidth="1.7976931348623157E308"/>
+                </HBox>
+            </children>
+            <BorderPane.margin>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </BorderPane.margin>
+        </VBox>
+    </right>
+</BorderPane>

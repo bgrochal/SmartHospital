@@ -162,10 +162,8 @@ class AlertResource(resource.CoAPResource):
     @staticmethod
     def thread_function():
         global alert
-        previous_state = 0
-
-        ca.subscribe(ca.BUTTON1)
         while True:
+			ca.query(ca.BUTTON1)
             response_value = ca.get_res().value_of(ca.BUTTON1)
             if response_value == 1:
                 if alert == 0:
@@ -173,7 +171,8 @@ class AlertResource(resource.CoAPResource):
                     ca.set_led1(1)
                 else:
                     alert = 0
-                    ca.set_led1(0)
+                    ca.set_led1(0
+			time.sleep(1)
 
     def render_GET(self, request):
         global alert
@@ -206,6 +205,9 @@ class PatientResource(resource.CoAPResource):
 
 
 # Global logic
+ca.set_led1(0)
+ca.set_dash(0)
+
 patient_name = "NONAME"
 alert = 0
 

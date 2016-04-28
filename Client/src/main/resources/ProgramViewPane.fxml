@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.BorderPane?>
+
+<BorderPane prefHeight="400.0" prefWidth="400.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="pl.edu.agh.iot.hospital.client.view.ProgramController">
+    <center>
+        <TableView fx:id="table" prefHeight="400.0" prefWidth="400.0" BorderPane.alignment="CENTER">
+            <columns>
+                <TableColumn fx:id="date" prefWidth="75.0" text="Date"/>
+                <TableColumn fx:id="hour" prefWidth="75.0" text="Hour"/>
+                <TableColumn fx:id="temp" prefWidth="100.0" text="Measured temperature"/>
+                <TableColumn fx:id="expected" prefWidth="100.0" text="Expected temperature"/>
+            </columns>
+        </TableView>
+    </center>
+</BorderPane>
