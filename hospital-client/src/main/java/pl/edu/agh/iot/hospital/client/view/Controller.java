@@ -1,9 +1,9 @@
 package pl.edu.agh.iot.hospital.client.view;
 
+import javafx.beans.binding.Bindings;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.scene.control.SelectionMode;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.util.converter.IntegerStringConverter;
 import javafx.util.converter.NumberStringConverter;
@@ -12,6 +12,14 @@ import pl.edu.agh.iot.hospital.client.model.Patient;
 import java.util.Collections;
 
 public class Controller {
+    @FXML
+    private Button clearHistoryButton;
+    @FXML
+    private Button deleteProgramButton;
+    @FXML
+    private Button deleteButton;
+    @FXML
+    private TextField addField;
     @FXML
     private TableView<Patient> table;
 
@@ -29,6 +37,10 @@ public class Controller {
     @FXML
     private void initialize() {
         table.getSelectionModel().setSelectionMode(SelectionMode.SINGLE);
+        deleteButton.disableProperty().bind(Bindings.isEmpty(table.getSelectionModel().getSelectedItems()));
+        deleteProgramButton.disableProperty().bind(Bindings.isEmpty(table.getSelectionModel().getSelectedItems()));
+        clearHistoryButton.disableProperty().bind(Bindings.isEmpty(table.getSelectionModel().getSelectedItems()));
+
         table.setEditable(true);
 
         deviceNo.setCellValueFactory(data -> data.getValue().deviceNoProperty().asObject());
@@ -45,6 +57,21 @@ public class Controller {
 
         alert.setCellValueFactory(data -> data.getValue().alertProperty());
 
-        table.getItems().setAll(new Patient(0));
+    }
+
+    public void handleAddDevice(ActionEvent actionEvent) {
+        table.getItems().add(new Patient(Integer.parseInt(addField.getText())));
+    }
+
+    public void handleDeleteAction(ActionEvent actionEvent) {
+        table.getItems().remove(table.getSelectionModel().getSelectedItem());
+    }
+
+    public void handleDeleteProgramAction(ActionEvent actionEvent) {
+        table.getSelectionModel().getSelectedItem().deleteTemperatureProgram();
+    }
+
+    public void handleClearHistoryAction(ActionEvent actionEvent) {
+        table.getSelectionModel().getSelectedItem().clearHistory();
     }
 }

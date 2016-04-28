@@ -20,7 +20,7 @@ import java.util.function.Supplier;
 public class Patient {
 
 //    private static final String BASE = "coap://192.168.17.9";
-    private static final String BASE = "coap://127.0.0.1:5683";
+    private static final String BASE = "coap://127.0.0.1:";
 
     private StringProperty baseForUri;
     private StringProperty name;
@@ -138,11 +138,15 @@ public class Patient {
         return result;
     }
 
-    public boolean clearHistory() throws URISyntaxException {
-        URI uri = new URI(baseForUri.get() + "/TemperatureHistory");
-        CoapResponse response = new CoapClient(uri).delete();
+    public boolean clearHistory() {
+        try {
+            URI uri = new URI(baseForUri.get() + "/TemperaturesHistory");
+            CoapResponse response = new CoapClient(uri).delete();
 
-        return (response.getResponseText().equals("History of temperatures deleted successfully"));
+            return (response.getResponseText().equals("History of temperatures deleted successfully"));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public boolean setTemperatureProgram(TempProgram program) throws URISyntaxException {
@@ -166,11 +170,15 @@ public class Patient {
         return result;
     }
 
-    public boolean deleteTemperatureProgram() throws URISyntaxException {
-        URI uri = new URI(baseForUri.get() + "/TemperatureProgram");
-        CoapResponse response = new CoapClient(uri).delete();
+    public boolean deleteTemperatureProgram() {
+        try {
+            URI uri = new URI(baseForUri.get() + "/TemperatureProgram");
+            CoapResponse response = new CoapClient(uri).delete();
 
-        return (response.getResponseText().equals("Program's output file deleted successfully"));
+            return (response.getResponseText().equals("Program's output file deleted successfully"));
+        } catch (URISyntaxException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void refresh() {
@@ -194,7 +202,6 @@ public class Patient {
     private Void refreshBed() {
         try {
             URI uri = new URI(baseForUri.get() + "/Bed");
-            System.out.println(uri);
             CoapResponse response = new CoapClient(uri).get();
             bedAngle.set(Integer.parseInt(response.getResponseText()));
             return null;
