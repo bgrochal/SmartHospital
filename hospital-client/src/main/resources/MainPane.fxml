@@ -1,19 +1,38 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import java.lang.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.layout.BorderPane?>
 
-<BorderPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<BorderPane prefHeight="600.0" prefWidth="800.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1"
+        fx:controller="pl.edu.agh.iot.hospital.client.view.Controller">
     <center>
-        <TableView prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
+        <TableView fx:id="table" prefHeight="200.0" prefWidth="200.0" BorderPane.alignment="CENTER">
             <columns>
-                <TableColumn prefWidth="75.0" text="Device No" />
-                <TableColumn prefWidth="75.0" text="Patient" />
-                <TableColumn prefWidth="75.0" text="Temperature" />
-                <TableColumn prefWidth="75.0" text="Bed position" />
+                <TableColumn fx:id="deviceNo" prefWidth="75.0" text="Device No" editable="true"/>
+                <TableColumn fx:id="patient" prefWidth="75.0" text="Patient" editable="true"/>
+                <TableColumn fx:id="temp" prefWidth="75.0" text="Temperature" />
+                <TableColumn fx:id="bedPosition" prefWidth="75.0" text="Bed position" editable="true"/>
+                <TableColumn fx:id="alert" prefWidth="75.0" text="Alert" />
             </columns>
         </TableView>
     </center>
+    <right>
+        <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="150.0" BorderPane.alignment="CENTER">
+            <opaqueInsets>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </opaqueInsets>
+            <!--<children>-->
+                <!--<Button fx:id="deleteButton" alignment="TOP_CENTER" maxWidth="1.7976931348623157E308" mnemonicParsing="false" text="Delete"> &lt;!&ndash;onAction="#handleDeleteAction" text="Delete">&ndash;&gt;-->
+                    <!--<VBox.margin>-->
+                        <!--<Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />-->
+                    <!--</VBox.margin></Button>-->
+            <!--</children>-->
+            <BorderPane.margin>
+                <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" />
+            </BorderPane.margin>
+        </VBox>
+    </right>
 </BorderPane>

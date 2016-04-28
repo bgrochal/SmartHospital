@@ -46,17 +46,16 @@ class BedResource(resource.CoAPResource):
     def __init__(self):
         resource.CoAPResource.__init__(self)
         self.visible = True
+        self.bed_position = 0
 
     def render_GET(self, request):
-        global bed_position
-        response_message = coap.Message(code=coap.CONTENT, payload='Bed position is: %d.' % bed_position)
+        response_message = coap.Message(code=coap.CONTENT, payload='%d' % self.bed_position)
         return defer.succeed(response_message)
 
     def render_PUT(self, request):
-        global bed_position
-        bed_position = (int)(request.payload)
-        ca.set_dash(bed_position)
-        response_message = coap.Message(code=coap.CONTENT, payload="Bed position set to: %d." % bed_position)
+        self.bed_position = (int)(request.payload)
+        ca.set_dash(self.bed_position)
+        response_message = coap.Message(code=coap.CONTENT, payload="%d" % self.bed_position)
         return defer.succeed(response_message)
 
 
@@ -71,7 +70,7 @@ class TemperatureResource(resource.CoAPResource):
         ca.query(ca.TEMP)
         response_value = ca.get_res().value_of(ca.TEMP)
         response_value = (response_value - 10) * 2
-        response_message = coap.Message(code=coap.CONTENT, payload="Temperature of patient is: %d." % response_value)
+        response_message = coap.Message(code=coap.CONTENT, payload="%d" % response_value)
 
         temperature_file = open("temperatures.txt", "a")
         temperature_file.write(
@@ -202,7 +201,6 @@ class PatientResource(resource.CoAPResource):
 
 # Global logic
 patient_name = "NONAME"
-bed_position = 0
 alert = 0
 
 # Resource tree creation
@@ -217,8 +215,8 @@ well_known.putChild('core', core)
 hospital = resource.CoAPResource()
 root.putChild('Hospital', hospital)
 
-alert = AlertResource()
-hospital.putChild('Alert', alert)
+alertO = AlertResource()
+hospital.putChild('Alert', alertO)
 
 bed = BedResource()
 hospital.putChild('Bed', bed)
