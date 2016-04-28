@@ -20,7 +20,8 @@ import java.util.function.Supplier;
 public class Patient {
 
 //    private static final String BASE = "coap://192.168.17.9";
-    private static final String BASE = "coap://127.0.0.1:";
+//    private static final String BASE = "coap://127.0.0.1:";
+    private static int deviceNum = 1;
 
     private StringProperty baseForUri;
     private StringProperty name;
@@ -29,10 +30,12 @@ public class Patient {
     private IntegerProperty bedAngle;
     private StringProperty alert;
 
+    private String url;
+
     private final CoapClient tempClient;
     private final CoapClient alertClient;
 
-    public Patient(int deviceNum) {
+    public Patient(String url) {
         baseForUri = new SimpleStringProperty();
         deviceNo = new SimpleIntegerProperty();
         name = new SimpleStringProperty();
@@ -42,8 +45,10 @@ public class Patient {
 
         tempClient = new CoapClient();
         alertClient = new CoapClient();
+        this.url = url;
 
         setDeviceNo(deviceNum);
+        deviceNum++;
         baseForUri.addListener((observable, oldValue, newValue) -> refresh());
         addNameEditionListener();
         addBedPositionEditionListener();
@@ -72,7 +77,7 @@ public class Patient {
     public void setDeviceNo(int deviceNo) {
         this.deviceNo.set(deviceNo);
 //        baseForUri.set(BASE + (deviceNo - 1) + ":/Hospital");
-        baseForUri.set(BASE + "/Hospital");
+        baseForUri.set(url + "/Hospital");
         tempClient.setURI(baseForUri.get() + "/Temperature");
         alertClient.setURI(baseForUri.get() + "/Alert");
     }
@@ -124,15 +129,20 @@ public class Patient {
 
 
 
-    public List<TempMeasurement> getTemperatureHistory() throws IOException, URISyntaxException {
-        URI uri = new URI(baseForUri.get() + "/TemperatureHistory");
+    public List<TempMeasurement> getTemperatureHistory() throws URISyntaxException {
+        URI uri = new URI(baseForUri.get() + "/TemperaturesHistory");
         CoapResponse response = new CoapClient(uri).get();
 
         List<TempMeasurement> result = new ArrayList<>();
 
         String[] splitted = response.getResponseText().split("\\n");
         for(String s: splitted){
-            result.add(new TempMeasurement(s));
+            try {
+                TempMeasurement temp = new TempMeasurement(s);
+                result.add(temp);
+            } catch (IOException e) {
+                System.out.println("Could not parse line: " + s);
+            }
         }
 
         return result;
