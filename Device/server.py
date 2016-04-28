@@ -97,7 +97,10 @@ class TemperatureFileResource(resource.CoAPResource):
         return defer.succeed(response_message)
 
     def render_DELETE(self, request):
-        os.remove("temperatures.txt")
+        try:
+            os.remove("temperatures.txt")
+        except:
+            pass
         response_message = coap.Message(code=coap.CONTENT, payload="History of temperatures deleted successfully.")
         return defer.succeed(response_message)
 
@@ -140,7 +143,10 @@ class TemperatureProgramResource(resource.CoAPResource):
         return defer.succeed(response_message)
 
     def render_DELETE(self, request):
-        os.remove("program_output.txt")
+        try:
+            os.remove("program_output.txt")
+        except:
+            pass
         response_message = coap.Message(code=coap.CONTENT, payload="Program's output file deleted successfully.")
         return defer.succeed(response_message)
 
