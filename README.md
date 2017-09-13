@@ -1,24 +1,25 @@
 # SmartHospital
-Smart Hospital is an IoT scenario created during IoT classes at AGH University of Science and Technology in Krakow.
+The Smart Hospital is an IoT classes scenario created during the IoT classes held at the AGH University of Science and Technology, Cracow.
+  
+A documentation of this project is available in Polish and included in this repository.
 
-Documentation of this project is available in polish and included in this repository.
-
-# Setup
-## Prerequisites
-It is obligatory to install the following python packages before: zope.interface-4.1.1 or later, Twisted-14.0.2 or later, txThings. To run client application, it is necessary to have Java 1.8 distribution or equivalent with JavaFX configured.
-## Device
-This project is created for AGH Copernicus device. More info: http://home.agh.edu.pl/~tszydlo/copernicus/.  
-Module serial is available directly on Copernicus device. Simple mock of this module is included in this repository. If you are using Copernicus, please remove Device/serial.py file.
-## Running
-In order to run CoAP server, type:
+## Setup
+### Prerequisites
+It is obligatory to install the following Python packages before: `zope.interface-4.1.1 or later`, `Twisted-14.0.2 or later`, `txThings`. It is also necessary to have a `Java 1.8` distribution installed (or an equivalent one with the `JavaFX` library configured) to run the client application.
+### Device
+This project is created for the [AGH Copernicus device](http://home.agh.edu.pl/~tszydlo/copernicus/).
+  
+The `serial` module is available directly on the Copernicus device. A simple mock of this module is included in the repository. If you are using the Copernicus device, please remove the `Device/serial.py` file.
+### Running
+In order to run the CoAP server, type:
 ```
 python server.py
 ```
-  
-After a few seconds server will start. Then run Java client as you wish (Maven included) and connect with server by typing it's IPv4 address in a text-field at the bottom of client's GUI window.
+After a few seconds the server will start. Then, run the Java client as you wish (a Maven build script included) and connect with the server by typing it's IPv4 address in a text-field at the bottom of the client's GUI window.
 
-# API
-This project uses Copernicus API created by atryda12. Source code is available here: https://github.com/atryda12/copernicus_api. Usage of this API is described in a Readme of linked project.
+## API
+This project uses a [Copernicus API](https://github.com/atryda12/copernicus_api) created by @atryda12. Usage of this API is described in a README file of the aforementioned project.
 
-#Californium Plugin
-Client-side implementation of CoAP uses org.eclipse.californium plugin. More info: http://www.eclipse.org/californium/. We encourage you also to install Californium plugin in your web browser (tested of Firefox) if you would like to send raw CoAP packets (browser with plugin works as a client).
+## Californium Plugin
+A client-side implementation of the CoAP uses the [org.eclipse.californium plugin](http://www.eclipse.org/californium/). We encourage you also to install the Californium plugin in your web browser (tested on the Firefox) if you would like to send raw CoAP packets (browser with plugin works as a client then).
+
